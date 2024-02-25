@@ -36,17 +36,17 @@ LINE3 = [Y1(:,[C3 CX1]); X23(:,[C3 CX1])]'; % 1 POINT 1 LINE
 CORPT = unique([LINE1;LINE2;LINE3],'rows');
 
 % Phase 4 : Find point of Intersection
-HG = [0; 0];
+HG = [0 ; 0 ];
 for i=1:size(A,1)
-    hg1=A(i,:);
-    b1=B(i,:);
+    HG1 = A(i,:);
+    B1 = B(i,:);
     for j=i+1:size(A,1)
-        hg2=A(j,:);
-        b2 = B(j,:);
-        Aa = [hg1; hg2];
-        Bb = [b1; b2];
-        Xx = Aa\Bb;
-        HG=[HG Xx];
+        HG2 = A(j,:);
+        B2 = B(j,:);
+        AA = [HG1;HG2];
+        BB = [B1;B2];
+        XX = AA\BB;
+        HG = [HG XX];
     end
 end
-pt = HG';
+PT = HG';

@@ -1,52 +1,64 @@
-clc;
-clear;
+% Code For Graphical Method
+clc; % Clear the command window
+clear; % Clear the workspace
+close all; % Close all figures
+format short; % Set the format to short
 
-% Phase 1 : Input Parameter
-C = [3 5];
-A = [1 2; 1 1; 0 1];
-B = [2000; 1500; 600];
+% Input Parameters
+c = [2 3]; % Cost coefficients
+A = [1 1;6 2;1 5;1 0;0 1]; % Coefficient matrix for constraints
+B = [4 ;8;4;3;3]; % Right-hand side vector for constraints
 
-% Phase 2 : Plotting a Graph
-Y1 = 0:400:max(B); % Y1 = [ 0         400         800        1200        1600        2000 ]
-X21 = (B(1) - A(1,1)*Y1)/A(1,2);
-X22 = (B(2) - A(2,1)*Y1)/A(2,2);
-X23 = (B(3) - A(3,1)*Y1)/A(3,2);
+% Plotting Constraints
+x1 = 0:1:max(B); % Range of x1 values for plotting
+figure; % Create a new figure
+for i = 1:size(A, 1)
+    y = (B(i) - A(i, 1) * x1) / A(i, 2);
+    plot(x1, max(0,y), 'LineWidth', 1); % Plot the constraint line
+    hold on;
+end
+xlabel('x1'); % Label x-axis
+ylabel('x2'); % Label y-axis
+title('Constraints'); % Set title
+grid on; % Turn on grid
+legend('x1 + x2 <= -1', '-0.5x1 + x2 <= 2'); % Add legend with corrected labels
 
-X21 = max(0,X21);
-X22 = max(0,X22);
-X23 = max(0,X23);
-
-plot(Y1,X21,'r',Y1,X22,'k',Y1,X23,'b');
-xlabel('Value of X1');
-ylabel('Value of X2');
-title('X1 v/s X2');
-legend('x1 + 2x2 = 2000','x1 + x2 = 1500','x2 = 600');
-grid on;
-
-% Phase 3 : Find Corners Points with axis.
-CX1 = find(Y1==0); % 1
-C1 = find(X21==0); % 6
-LINE1 = [Y1(:,[C1 CX1]); X21(:,[C1 CX1])]'; % 2 POINTS 1 LINE
-
-C2 = find(X22==0); % 5 6
-LINE2 = [Y1(:,[C2 CX1]); X22(:,[C2 CX1])]';% 3 POINTS 2 LINE
-
-C3 = find(X23==0); % NOT FOUND
-LINE3 = [Y1(:,[C3 CX1]); X23(:,[C3 CX1])]'; % 1 POINT 1 LINE
-CORPT = unique([LINE1;LINE2;LINE3],'rows');
-
-% Phase 4 : Find point of Intersection
-HG = [0 ; 0 ];
-for i=1:size(A,1)
-    HG1 = A(i,:);
-    B1 = B(i,:);
-    for j=i+1:size(A,1)
-        HG2 = A(j,:);
+% Finding Intersection Points
+intersectionPoints = [];
+for i = 1:size(A, 1)
+    for j = i+1:size(A, 1)
+        A1 = A(i,:);
+        B1 = B(i,:);
+        A2 = A(j,:);
         B2 = B(j,:);
-        AA = [HG1;HG2];
-        BB = [B1;B2];
-        XX = AA\BB;
-        HG = [HG XX];
+        X = inv([A1; A2]) * [B1; B2];
+        if all(X >= 0) % Check if the solution is feasible
+            intersectionPoints = [intersectionPoints; X'];
+        end
     end
 end
-PT = HG';
+
+% Keeping only Feasible Region
+feasiblePoints = [];
+for i = 1:size(intersectionPoints, 1)
+    if all(A * intersectionPoints(i,:)' <= B) % Check feasibility
+        feasiblePoints = [feasiblePoints; intersectionPoints(i,:)];
+    end
+end
+
+% Evaluating the Objective Function
+if isempty(feasiblePoints) % Check if feasible region is empty
+    disp('Unbounded or Infeasible'); % Display message
+else
+    objValues = feasiblePoints * c';
+    if all(c >= 0) % Maximization problem
+        [optimalValue, index] = max(objValues);
+    else % Minimization problem
+        [optimalValue, index] = min(objValues);
+    end
+
+    % Display Optimal Solution
+    optimalPoint = feasiblePoints(index, :);
+    fprintf("The optimal value of the function is %f at (%g,%g)\n", optimalValue, optimalPoint(1), optimalPoint(2));
+end
+% Code Ends
